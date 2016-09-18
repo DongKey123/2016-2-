@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CameraMove : MonoBehaviour {
     //카메라 연출체크
-    bool IsDramatic = false;
+    public bool IsDramatic = false;
     //카메라 바라보기,pos
     public GameObject player;
     private Vector3 offset;
@@ -36,7 +36,8 @@ public class CameraMove : MonoBehaviour {
 
         float inputH;
         float inputV;
-        if (!IsDramatic)
+
+        if(!IsDramatic)
         {
             //마우스 좌우 이동
             inputH = Input.GetAxis("Mouse X");
@@ -55,8 +56,7 @@ public class CameraMove : MonoBehaviour {
 
             //마우스 휠
             float wheel = Input.GetAxis("Mouse ScrollWheel");
-            Camera.main.fieldOfView -= wheel* wheelSpeed;
-            Debug.Log(Camera.main.fieldOfView);
+            Camera.main.fieldOfView -= wheel * wheelSpeed;
 
             if (Camera.main.fieldOfView > zoomMax)
             {
@@ -67,8 +67,9 @@ public class CameraMove : MonoBehaviour {
                 Camera.main.fieldOfView = zoomMin;
             }
 
-
         }
+
+
 
     }
 

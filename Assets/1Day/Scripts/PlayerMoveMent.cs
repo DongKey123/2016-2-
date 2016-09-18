@@ -4,6 +4,13 @@ using System.Collections;
 
 public class PlayerMoveMent : MonoBehaviour
 {
+    [SerializeField]
+    Transform PlayerCenter;//밀기위해....존재
+    [SerializeField]
+    ClockMove m_clock;
+
+    public GameObject mainCam;
+
 
     [SerializeField]
     float m_Speed;
@@ -22,10 +29,13 @@ public class PlayerMoveMent : MonoBehaviour
     private Vector3 fowardVec;
     private Vector3 rightVec;
 
-    private Animator anim;
+    public Animator anim;
 
-    // Use this for initialization
-    void Start()
+    public bool ClockWise;
+    
+
+// Use this for initialization
+void Start()
     {
         myRigid = GetComponent<Rigidbody>();
         anim = this.GetComponent<Animator>();
@@ -47,10 +57,10 @@ public class PlayerMoveMent : MonoBehaviour
             anim.SetBool("b_Move", false);
         }
 
-        //이동
-        Move(h, v);      
-        //회전
-        Rotation(h, v);
+        ////이동
+        //Move(h, v);      
+        ////회전
+        //Rotation(h, v);
 
         //점프
         if (Input.GetButtonDown("Jump") && m_grounded == true)
@@ -61,16 +71,7 @@ public class PlayerMoveMent : MonoBehaviour
             Debug.Log("Jump");
             m_IsJumping = true;
         }
-
-
-        //if( h != 0)
-        //{
-        //    anim.SetBool("b_Move", true);
-        //}
-        //else
-        //{
-        //    anim.SetBool("b_Move", false);
-        //}
+        
         //밀때 속도
         //if(anim.GetBool("b_Push") == true)
         //{
@@ -87,6 +88,11 @@ public class PlayerMoveMent : MonoBehaviour
 
     void FixedUpdate()
     {
+        //좌우 확인
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        Move(h, v);
+        Rotation(h, v);
         Jump();
     }
 
@@ -107,34 +113,54 @@ public class PlayerMoveMent : MonoBehaviour
             anim.SetBool("b_Ground", true);
             m_grounded = true;
         }
-        else if (col.gameObject.tag == "minHand")
-        {
-            if (anim.GetBool("b_Move") == true)
-            {
-                anim.SetBool("b_Push", true);
-            }
-        }
     }
 
 
     void OnCollisionStay(Collision col)
     {
-        if (col.gameObject.tag == "minHand")
-        {
-        }
     }
 
     void OnCollisionExit(Collision col)
     {
-        if (col.gameObject.tag == "minHand")
-        {
-            anim.SetBool("b_Push", false);
-            //clock.ReSetMoveSpeed();
-        }
     }
 
     void Move(float h, float v)
     {
+        if (anim.GetBool("b_Push") == true) //무엇을 밀고 있을때.
+        {
+            if (Input.GetButton("Interactive"))
+            {
+                if(!ClockWise)
+                {
+                    //시계방향으로 밀때
+                    PlayerCenter.Rotate(new Vector3(0, 1, 0) * (m_PlayerPushSpeed + m_clock.m_initialminhandSpeed) * Time.deltaTime);
+                    m_clock.m_minhandSpeed = (m_clock.m_initialminhandSpeed + m_PlayerPushSpeed);
+
+
+                    //anim.SetBool("b_Push", false);
+                    mainCam.GetComponent<CameraMove>().IsDramatic = false;
+                    //m_clock.ReSetMoveSpeed();
+                }
+                else
+                {
+                    //반시계방향으로 밀때
+                    PlayerCenter.Rotate(new Vector3(0, 1, 0) * -(m_PlayerPushSpeed + m_clock.m_initialminhandSpeed) * Time.deltaTime);
+                    m_clock.m_minhandSpeed = -(m_clock.m_initialminhandSpeed + m_PlayerPushSpeed);
+
+
+                    //anim.SetBool("b_Push", false);
+                    mainCam.GetComponent<CameraMove>().IsDramatic = false;
+                    //m_clock.ReSetMoveSpeed();
+                }
+                
+                return;
+            }
+            else
+            {
+                m_clock.ReSetMoveSpeed();
+            }
+        }
+
         //foward
         fowardVec = this.transform.position - Camera.main.transform.position;
         fowardVec.y = 0;
@@ -169,7 +195,10 @@ public class PlayerMoveMent : MonoBehaviour
 
     void Rotation(float h, float v)
     {
-
+        if (anim.GetBool("b_Push") == true) //무엇을 밀고 있을때.
+        {
+            return;
+        }
         Vector3 nowPos = this.transform.position;
         Vector3 lookVec = new Vector3();
         lookVec += nowPos;
